@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IProject extends Document {
   name: string;
-  color: "red" | "blue" | "green" | "yellow" | "orange" | "purple";
+  color: "red" | "blue" | "green" | "yellow" | "orange" | "purple" | "white";
   tasks: Types.ObjectId[];
   createdBy: Types.ObjectId;
 }
@@ -14,7 +14,7 @@ const ProjectSchema = new Schema<IProject>(
     color: {
       type: String,
       enum: ["red", "blue", "green", "yellow", "orange", "purple"],
-      default: "blue",
+      default: "white",
     },
     tasks: [{ type: Schema.Types.ObjectId, ref: "Task" }],
     createdBy: { type: Schema.Types.ObjectId, ref: "User" },
