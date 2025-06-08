@@ -1,47 +1,45 @@
 import dbConnect from "@/lib/db/ConnectDB";
-import { ApiResponse } from "@/types/ApiResponse";
-import { getAuthUser } from "@/lib/utils/getAuthUser";
 import { NextResponse } from "next/server";
-import ProjectModel from "@/lib/models/Project.model";
+import { getAuthUser } from "@/lib/utils/getAuthUser";
+import TaskModel from "@/lib/models/Task.model";
+import { ApiResponse } from "@/types/ApiResponse";
+import mongoose from "mongoose";
 
 export async function GET(
   request: Request,
   { params }: { params: { id: string } }
 ) {
   await dbConnect();
-
-  const projectId = await params.id;
+  const userId = await getAuthUser();
 
   try {
-    const userId = await getAuthUser();
-    const project = await ProjectModel.find({
-      _id: projectId,
+    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, message: "Invalid Task ID" },
+        { status: 400 }
+      );
+    }
+
+    const task = await TaskModel.findOne({
+      _id: params.id,
       createdBy: userId,
     });
 
-    if (!project) {
-      return NextResponse.json(
-        { success: false, message: "Project Not Found or Unauthorized" },
+    if (!task) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, message: "Task not found or unauthorized" },
         { status: 404 }
       );
     }
 
     return NextResponse.json<ApiResponse>(
-      {
-        success: true,
-        message: "Project Fetched Successfully",
-        data: project,
-      },
+      { success: true, message: "Task fetched successfully", data: task },
       { status: 200 }
     );
   } catch (error: any) {
-    console.error("Error while Updating the project: ", error.message);
+    console.error("Error fetching task:", error.message);
     return NextResponse.json<ApiResponse>(
-      {
-        success: false,
-        message: "Internal Server Error",
-        error: error.message,
-      },
+      { success: false, message: "Internal Server Error" },
       { status: 500 }
     );
   }
@@ -52,41 +50,45 @@ export async function PATCH(
   { params }: { params: { id: string } }
 ) {
   await dbConnect();
+  const userId = await getAuthUser();
+  const body = await request.json();
 
   try {
-    const userId = await getAuthUser();
-    const body = await request.json();
-    const allowedFields = ["name", "color", "tasks"];
+    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, message: "Invalid Task ID" },
+        { status: 400 }
+      );
+    }
+
+    const allowedFields = ["name", "isCompleted"];
     const updateData: Record<string, any> = {};
 
     for (const field of allowedFields) {
       if (body[field] !== undefined) updateData[field] = body[field];
     }
 
-    const updated = await ProjectModel.findOneAndUpdate(
+    const updatedTask = await TaskModel.findOneAndUpdate(
       { _id: params.id, createdBy: userId },
       updateData,
       { new: true }
     );
 
-    if (!updated) {
-      return NextResponse.json(
-        { success: false, message: "Project Not Found or Unauthorized" },
+    if (!updatedTask) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, message: "Task not found or unauthorized" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Project Updated Successfully",
-        data: updated,
-      },
-      { status: 201 }
+    return NextResponse.json<ApiResponse>(
+      { success: true, message: "Task updated", data: updatedTask },
+      { status: 200 }
     );
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, message: err.message },
+  } catch (error: any) {
+    console.error("Error updating task:", error.message);
+    return NextResponse.json<ApiResponse>(
+      { success: false, message: "Internal Server Error" },
       { status: 500 }
     );
   }
@@ -97,31 +99,36 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   await dbConnect();
+  const userId = await getAuthUser();
 
   try {
-    const userId = await getAuthUser();
-    const deleted = await ProjectModel.findOneAndDelete({
+    if (!mongoose.Types.ObjectId.isValid(params.id)) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, message: "Invalid Task ID" },
+        { status: 400 }
+      );
+    }
+
+    const deletedTask = await TaskModel.findOneAndDelete({
       _id: params.id,
       createdBy: userId,
     });
 
-    if (!deleted) {
-      return NextResponse.json(
-        { success: false, message: "Project Not Found or Unauthorized" },
+    if (!deletedTask) {
+      return NextResponse.json<ApiResponse>(
+        { success: false, message: "Task not found or unauthorized" },
         { status: 404 }
       );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: "Project Deleted Successfully",
-      },
+    return NextResponse.json<ApiResponse>(
+      { success: true, message: "Task deleted" },
       { status: 200 }
     );
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, message: err.message },
+  } catch (error: any) {
+    console.error("Error deleting task:", error.message);
+    return NextResponse.json<ApiResponse>(
+      { success: false, message: "Internal Server Error" },
       { status: 500 }
     );
   }

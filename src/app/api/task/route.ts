@@ -1,33 +1,32 @@
 import dbConnect from "@/lib/db/ConnectDB";
-import { ApiResponse } from "@/types/ApiResponse";
-import { getAuthUser } from "@/lib/utils/getAuthUser";
 import { NextResponse } from "next/server";
-import ProjectModel from "@/lib/models/Project.model";
+import { getAuthUser } from "@/lib/utils/getAuthUser";
+import TaskModel from "@/lib/models/Task.model";
+import { ApiResponse } from "@/types/ApiResponse";
 
 export async function POST(request: Request) {
   await dbConnect();
 
   try {
     const userId = await getAuthUser();
-    const { name, color, tasks } = await request.json();
+    const { name, isCompleted } = await request.json();
 
-    const newProject = await ProjectModel.create({
+    const newTask = await TaskModel.create({
       name,
-      color,
-      tasks,
+      isCompleted: isCompleted || false,
       createdBy: userId,
     });
 
     return NextResponse.json<ApiResponse>(
       {
         success: true,
-        message: "Project Created Successfully",
-        data: newProject,
+        message: "Task created successfully",
+        data: newTask,
       },
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("Error Creating Project:", error.message);
+    console.error("Error creating task:", error.message);
     return NextResponse.json<ApiResponse>(
       { success: false, message: "Internal Server Error" },
       { status: 500 }
@@ -37,23 +36,25 @@ export async function POST(request: Request) {
 
 export async function GET(request: Request) {
   await dbConnect();
+
   try {
     const userId = await getAuthUser();
-
-    const projects = await ProjectModel.find({ createdBy: userId });
+    const tasks = await TaskModel.find({ createdBy: userId }).sort({
+      createdAt: -1,
+    });
 
     return NextResponse.json<ApiResponse>(
       {
         success: true,
-        message: "Project Fetched Successfully",
-        data: projects,
+        message: "Tasks fetched successfully",
+        data: tasks,
       },
       { status: 200 }
     );
   } catch (error: any) {
-    console.log("Error while Getting All Projects: ", error.message);
+    console.error("Error fetching tasks:", error.message);
     return NextResponse.json<ApiResponse>(
-      { success: false, message: error.message },
+      { success: false, message: "Internal Server Error" },
       { status: 500 }
     );
   }
