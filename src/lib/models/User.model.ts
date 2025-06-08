@@ -6,6 +6,9 @@ export interface IUser extends Document {
   email: string;
   password: string;
   fromGoogle: boolean;
+  ratePerHour: number;
+  totalHourWorked: number;
+  totalIncome: number;
   trackedTime: Types.ObjectId[];
   projects: Types.ObjectId[];
   tasks: Types.ObjectId[];
@@ -39,6 +42,9 @@ const UserSchema: Schema<IUser> = new Schema(
       type: Boolean,
       default: false,
     },
+    ratePerHour: { type: Number },
+    totalHourWorked: { type: Number },
+    totalIncome: { type: Number },
     trackedTime: [{ type: Schema.Types.ObjectId, ref: "TrackedTime" }],
     projects: [{ type: Schema.Types.ObjectId, ref: "Project" }],
     tasks: [{ type: Schema.Types.ObjectId, ref: "Task" }],
