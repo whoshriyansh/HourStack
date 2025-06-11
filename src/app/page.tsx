@@ -34,18 +34,18 @@ export default function Homepage() {
           />
         </div>
 
-        <h1 className="text-4xl font-bold mb-4 tracking-tight">
+        <h1 className="text-lg md:text-2xl lg:text-4xl font-bold mb-4 tracking-tight">
           Start tracking you most valuable asset.
         </h1>
 
         {/* <p className="text-white/80 mb-10">Start Tracking it like a Pro</p> */}
 
-        <div className="flex flex-col sm:flex-row justify-center gap-4">
+        <div className="flex flex-row justify-center gap-4">
           <Button
             variant="outline"
             className="cursor-pointer transition-transform hover:scale-105"
           >
-            <Link href="/login" className="flex items-center">
+            <Link href="/signin" className="flex items-center">
               <LogIn className="mr-2 h-5 w-5" />
               Login
             </Link>

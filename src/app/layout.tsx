@@ -2,7 +2,7 @@
 import { ReactNode } from "react";
 import { Lato, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "next-themes";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const latoSans = Lato({
   variable: "--font-lato-sans",
